@@ -1,4 +1,4 @@
-# node dependencies
+# Node dependencies
 node_modules/
 .env
 .env.local
@@ -30,3 +30,11 @@ Thumbs.db
 
 # Optional: exclude dist if using bundler
 /dist/
+
+# Optional: exclude test output
+/test-output/
+
+# Optional: exclude temporary files
+*.tmp
+*.swp
+
