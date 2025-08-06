@@ -11,18 +11,23 @@ contract Dummy${i} {
 const loopAudit = async () => {
   for (let i = 0; i < 1000; i++) {
     const code = generateDummyContract(i);
-    const res = await fetch("https://contractauditorx.onrender.com/audit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code }),
-    });
 
-    const json = await res.json();
+    try {
+      const res = await fetch("https://contractauditorx.onrender.com/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      });
 
-    if (json.payment_url) {
-      console.log(`✅ Dummy${i} auditado. Enlace de pago generado: ${json.payment_url}`);
-    } else {
-      console.warn(`⚠️ Dummy${i} falló en la auditoría.`);
+      const json = await res.json();
+
+      if (json.payment_url) {
+        console.log(`✅ Dummy${i} auditado. Enlace de pago generado: ${json.payment_url}`);
+      } else {
+        console.warn(`⚠️ Dummy${i} falló en la auditoría. Respuesta: ${JSON.stringify(json)}`);
+      }
+    } catch (err) {
+      console.error(`❌ Error al auditar Dummy${i}:`, err.message);
     }
   }
 };

@@ -1,22 +1,77 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ConocAuditBot</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
+<body style="margin:0; font-family:'Inter', sans-serif; background:linear-gradient(120deg, #7f00ff, #00c6ff); color:#333;">
 
-  <h1>🔍 ConocAuditBot</h1>
-  <p>Auditoría instantánea para contratos inteligentes</p>
+  <div class="container" style="max-width:600px; margin:auto; text-align:center; padding-top:60px;">
+    <h1 style="font-size:2.5rem; margin-bottom:10px; color:white;">🔍 ConocAuditBot</h1>
+    <p style="font-size:1.2rem; margin-bottom:30px; color:#f5f5f5;">Auditoría instantánea para contratos inteligentes en segundos</p>
 
-  <input id="contractAddress" type="text" placeholder="Pega la dirección aquí" />
-  <button onclick="auditContract(document.getElementById('contractAddress').value)">
-    Auditar ahora
-  </button>
+    <input id="contractInput" type="text" placeholder="Pega tu dirección aquí"
+      style="padding:10px; width:80%; border-radius:5px; border:1px solid #ccc; font-size:16px; margin-bottom:20px;" />
 
-  <div id="report"></div>
+    <button id="auditButton"
+      style="padding:12px 24px; font-size:16px; background-color:#fff; color:#7f00ff; border:none; border-radius:30px; box-shadow:0 0 10px #fff; cursor:pointer; transition:all 0.3s ease;">
+      ⚡ Auditar ahora
+    </button>
+
+    <div id="report" class="output"
+      style="margin-top:30px; text-align:left; padding:15px; background-color:rgba(255,255,255,0.9); border-radius:10px;">
+      <p id="statusText" style="font-weight:bold; margin-bottom:10px;">⏳ Esperando dirección...</p>
+      <pre id="auditOutput" style="white-space:pre-wrap; font-size:14px; color:#333;"></pre>
+      <a id="coinbaseLink" href="#" target="_blank"
+        style="display:none; margin-top:15px; text-decoration:none; font-weight:bold; color:#2ecc71;">💳 Pagar con Coinbase</a>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("auditButton").addEventListener("click", async () => {
+      const address = document.getElementById("contractInput").value.trim();
+      const output = document.getElementById("auditOutput");
+      const statusText = document.getElementById("statusText");
+      const coinbaseLink = document.getElementById("coinbaseLink");
+
+      if (!address) {
+        statusText.innerText = "⚠️ Dirección inválida.";
+        output.innerText = "";
+        coinbaseLink.style.display = "none";
+        return;
+      }
+
+      statusText.innerText = "🔍 Analizando contrato...";
+      output.innerText = "";
+      coinbaseLink.style.display = "none";
+
+      try {
+        const res = await fetch("https://contractauditorx.onrender.com/audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: address })
+        });
+
+        const data = await res.json();
+
+        if (data.status === "success") {
+          statusText.innerText = "✅ Auditoría completada:";
+          output.innerText = typeof data.audit_report === 'object'
+            ? JSON.stringify(data.audit_report, null, 2)
+            : data.audit_report || "Sin detalles técnicos.";
+          coinbaseLink.href = data.payment_url;
+          coinbaseLink.style.display = "inline-block";
+          coinbaseLink.innerText = "💳 Pagar con Coinbase";
+        } else {
+          statusText.innerText = "❌ Error del servidor:";
+          output.innerText = data.error || "No se recibió respuesta válida.";
+        }
+
+      } catch (err) {
+        statusText.innerText = "🔥 Error de red o CORS.";
+        output.innerText = err.message;
+        coinbaseLink.style.display = "none";
+        console.error(err);
+      }
+    });
+  </script>
+
+</body>
+
 
   <script src="script.js"></script>
 
