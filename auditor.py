@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -8,15 +8,17 @@ import os
 
 # 🔐 Cargar variables de entorno
 load_dotenv()
+
+# 🚀 Instancia de FastAPI
 app = FastAPI()
 
 # 🌐 Middleware CORS blindado
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],           # permite cualquier origen
+    allow_origins=["*"],           # o reemplazá con tu dominio frontend
     allow_credentials=True,
-    allow_methods=["*"],           # permite todos los métodos
-    allow_headers=["*"],           # permite todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # ✅ Modelo de entrada
@@ -42,31 +44,6 @@ async def audit_contract(payload: ContractRequest):
             content={"error": f"Error interno: {str(e)}"}
         )
 
-# 🛡️ Endpoint manual para OPTIONS /audit (preflight CORS)
-@app.options("/audit")
-async def options_audit(request: Request):
-    return JSONResponse(
-        status_code=200,
-        content={},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "*"
-        }
-    )
-
-# 🛡️ Endpoint manual para OPTIONS /
-@app.options("/")
-async def options_root():
-    return JSONResponse(
-        status_code=200,
-        content={},
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "*"
-        }
-    )
 
 
 
