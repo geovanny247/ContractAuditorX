@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ConocAuditBot</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <h1>🔍 ConocAuditBot</h1>
+  <p>Auditoría instantánea para contratos inteligentes</p>
+
+  <input id="contractAddress" type="text" placeholder="Pega la dirección aquí" />
+  <button onclick="auditContract(document.getElementById('contractAddress').value)">
+    Auditar ahora
+  </button>
+
+  <div id="report"></div>
+
+  <script src="script.js"></script>
+
+</body>
+</html>
+

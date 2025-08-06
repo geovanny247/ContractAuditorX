@@ -1,1 +1,2 @@
-web: uvicorn auditor:app --host=0.0.0.0 --port=8000
+web: gunicorn auditor:app -w 1 -k uvicorn.workers.UvicornWorker
+
