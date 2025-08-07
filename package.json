@@ -1,5 +1,24 @@
 {
-  "name": "hardhat-project",
+  "name": "contractauditorx-sdk",
+  "version": "1.0.0",
+  "description": "Auditoría automática de contratos inteligentes con generación de enlaces de pago vía Coinbase Commerce.",
+  "main": "auditBeforeDeploy.js",
+  "scripts": {
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "author": "Geovanny López",
+  "license": "MIT",
+  "keywords": [
+    "smart-contracts",
+    "auditor",
+    "coinbase-commerce",
+    "hardhat",
+    "sdk"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geovanny247/ContractAuditorX.git"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "dotenv": "^17.2.0",
@@ -8,5 +27,6 @@
   "dependencies": {
     "@openzeppelin/contracts": "^5.4.0",
     "node-fetch": "^3.3.2"
-  }
+  },
+  "type": "module"
 }
