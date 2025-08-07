@@ -1,6 +1,6 @@
 {
   "name": "contractauditorx-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Auditoría automática de contratos inteligentes con generación de enlaces de pago vía Coinbase Commerce.",
   "main": "auditBeforeDeploy.js",
   "scripts": {
