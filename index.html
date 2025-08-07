@@ -4,7 +4,7 @@
     <h1 style="font-size:2.5rem; margin-bottom:10px; color:white;">🔍 ConocAuditBot</h1>
     <p style="font-size:1.2rem; margin-bottom:30px; color:#f5f5f5;">Auditoría instantánea para contratos inteligentes en segundos</p>
 
-    <input id="contractInput" type="text" placeholder="Pega tu dirección aquí"
+    <input id="contractInput" type="text" placeholder="Pega tu contrato aquí"
       style="padding:10px; width:80%; border-radius:5px; border:1px solid #ccc; font-size:16px; margin-bottom:20px;" />
 
     <button id="auditButton"
@@ -23,19 +23,19 @@
 
   <script>
     document.getElementById("auditButton").addEventListener("click", async () => {
-      const address = document.getElementById("contractInput").value.trim();
+      const code = document.getElementById("contractInput").value.trim();
       const output = document.getElementById("auditOutput");
       const statusText = document.getElementById("statusText");
       const coinbaseLink = document.getElementById("coinbaseLink");
 
-      if (!address) {
-        statusText.innerText = "⚠️ Dirección inválida.";
+      if (!code) {
+        statusText.innerText = "⚠️ Contrato inválido.";
         output.innerText = "";
         coinbaseLink.style.display = "none";
         return;
       }
 
-      statusText.innerText = "🔍 Analizando contrato...";
+      statusText.innerText = "🔄 Generando pago...";
       output.innerText = "";
       coinbaseLink.style.display = "none";
 
@@ -43,19 +43,35 @@
         const res = await fetch("https://contractauditorx.onrender.com/audit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code: address })
+          body: JSON.stringify({ code })
         });
 
         const data = await res.json();
 
-        if (data.status === "success") {
-          statusText.innerText = "✅ Auditoría completada:";
-          output.innerText = typeof data.audit_report === 'object'
-            ? JSON.stringify(data.audit_report, null, 2)
-            : data.audit_report || "Sin detalles técnicos.";
+        if (data.status === "pendiente") {
           coinbaseLink.href = data.payment_url;
           coinbaseLink.style.display = "inline-block";
           coinbaseLink.innerText = "💳 Pagar con Coinbase";
+          statusText.innerText = "💰 Esperando confirmación de pago...";
+
+          // Esperar 10 segundos y verificar pago
+          setTimeout(async () => {
+            const verifyRes = await fetch("https://contractauditorx.onrender.com/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ charge_id: data.charge_id, code })
+            });
+
+            const verifyData = await verifyRes.json();
+
+            if (verifyData.status === "paid") {
+              statusText.innerText = "✅ Auditoría completada:";
+              output.innerText = JSON.stringify(verifyData.audit_report, null, 2);
+            } else {
+              statusText.innerText = "⏳ Pago no confirmado aún.";
+              output.innerText = "Intenta nuevamente en unos segundos.";
+            }
+          }, 10000);
         } else {
           statusText.innerText = "❌ Error del servidor:";
           output.innerText = data.error || "No se recibió respuesta válida.";

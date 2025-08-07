@@ -24,7 +24,7 @@ class ContractRequest(BaseModel):
 @app.post("/audit")
 async def audit_contract(payload: ContractRequest):
     try:
-        report = analyze_contract(payload.code)
+        audit_id = "audit_" + str(hash(payload.code))[:8]
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -39,19 +39,24 @@ async def audit_contract(payload: ContractRequest):
                     "local_price": {
                         "amount": "5.00",
                         "currency": "USDC"
+                    },
+                    "metadata": {
+                        "audit_id": audit_id
                     }
                 }
             )
 
         checkout = response.json()
         payment_url = checkout.get("hosted_url")
+        charge_id = checkout.get("id")
 
         return JSONResponse(
             status_code=200,
             content={
-                "audit_report": report,
-                "status": "success",
-                "payment_url": payment_url
+                "status": "pendiente",
+                "payment_url": payment_url,
+                "charge_id": charge_id,
+                "audit_id": audit_id
             }
         )
 
@@ -78,12 +83,13 @@ async def verify_payment(request: Request):
             response = await client.get(
                 f"https://api.commerce.coinbase.com/charges/{charge_id}",
                 headers={
-                    "X-CC-Api-Key": os.getenv("COINBASE_API_KEY")
+                    "X-CC-Api-Key": os.getenv("COINBASE_API_KEY"),
+                    "X-CC-Version": "2018-03-22"
                 }
             )
 
         charge = response.json()
-        status = charge.get("timeline", [{}])[-1].get("status")
+        status = charge.get("data", {}).get("timeline", [{}])[-1].get("status")
 
         if status == "COMPLETED":
             report = analyze_contract(code)
@@ -105,6 +111,7 @@ async def verify_payment(request: Request):
             status_code=500,
             content={"error": f"Error interno: {str(e)}"}
         )
+
 
 
 
