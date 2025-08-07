@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -10,6 +10,7 @@ import httpx
 load_dotenv()
 app = FastAPI()
 
+# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,13 +19,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Modelo de entrada
 class ContractRequest(BaseModel):
     code: str
 
+# Endpoint para generar el pago
 @app.post("/audit")
 async def audit_contract(payload: ContractRequest):
     try:
-        audit_id = "audit_" + str(hash(payload.code))[:8]
+        audit_id = "audit_" + str(abs(hash(payload.code)))[:8]
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -46,6 +49,9 @@ async def audit_contract(payload: ContractRequest):
                 }
             )
 
+        if response.status_code != 201:
+            raise HTTPException(status_code=500, detail="Error al generar el checkout")
+
         checkout = response.json()
         payment_url = checkout.get("hosted_url")
         charge_id = checkout.get("id")
@@ -66,6 +72,7 @@ async def audit_contract(payload: ContractRequest):
             content={"error": f"Error interno: {str(e)}"}
         )
 
+# Endpoint para verificar el pago y ejecutar la auditoría
 @app.post("/verify-payment")
 async def verify_payment(request: Request):
     try:
@@ -74,10 +81,7 @@ async def verify_payment(request: Request):
         code = data.get("code")
 
         if not charge_id or not code:
-            return JSONResponse(
-                status_code=400,
-                content={"error": "Faltan parámetros: charge_id y code"}
-            )
+            raise HTTPException(status_code=400, detail="Faltan parámetros: charge_id y code")
 
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -87,6 +91,9 @@ async def verify_payment(request: Request):
                     "X-CC-Version": "2018-03-22"
                 }
             )
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=500, detail="Error al verificar el pago")
 
         charge = response.json()
         status = charge.get("data", {}).get("timeline", [{}])[-1].get("status")
@@ -111,6 +118,7 @@ async def verify_payment(request: Request):
             status_code=500,
             content={"error": f"Error interno: {str(e)}"}
         )
+
 
 
 
