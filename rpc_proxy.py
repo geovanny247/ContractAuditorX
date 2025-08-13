@@ -1,12 +1,15 @@
+import os
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import requests
-import os
 
 app = FastAPI()
 
-# URL del nodo real (Alchemy)
-NODE_URL = "https://polygon-mainnet.g.alchemy.com/v2/" + os.getenv("ALCHEMY_KEY")
+def get_node_url():
+    key = os.getenv("ALCHEMY_KEY")
+    if not key:
+        raise RuntimeError("ALCHEMY_KEY no está definida en el entorno")
+    return "https://polygon-mainnet.g.alchemy.com/v2/" + key
 
 @app.post("/rpc")
 async def proxy_rpc(request: Request):
@@ -61,6 +64,7 @@ async def proxy_rpc(request: Request):
 
     # Si todo está bien, reenviar al nodo real
     try:
+        NODE_URL = get_node_url()
         response = requests.post(NODE_URL, json=body)
         return JSONResponse(status_code=response.status_code, content=response.json())
     except Exception as e:

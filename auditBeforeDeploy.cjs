@@ -1,8 +1,8 @@
-const { generateReport } = require("./generateReport");
-const { checkPaymentStatus } = require("./checkPaymentStatus");
-const config = require("./auditor.config");
+import { generateReport } from "./generateReport.js";
+import { checkPaymentStatus } from "./checkPaymentStatus.js";
+import config from "./auditor.config.js";
 
-async function auditBeforeDeploy() {
+export async function auditBeforeDeploy() {
   const report = await generateReport();
   console.log("🛡️ Informe de auditoría:", report);
 
@@ -17,4 +17,3 @@ async function auditBeforeDeploy() {
   }
 }
 
-module.exports = { auditBeforeDeploy };

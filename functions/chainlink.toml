@@ -1,0 +1,5 @@
+name = "ContractAuditorX"
+description = "Auditoría automática antes de ejecutar lógica crítica"
+runtime = "javascript"
+source = "functions/audit.js"
+secrets = ["COINBASE_API_KEY"]

@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: ContractAuditorX API
+  version: 1.0.0
+  description: Auditoría automática de contratos inteligentes con validación de pago.
+
+paths:
+  /audit:
+    post:
+      summary: Genera auditoría y crea pago
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                  example: "0x608060405234801561001057600080fd5b506..."
+      responses:
+        '200':
+          description: URL de pago y audit_id
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  payment_url:
+                    type: string
+                  charge_id:
+                    type: string
+                  audit_id:
+                    type: string
+
+  /verify-payment:
+    post:
+      summary: Verifica pago y ejecuta auditoría
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                charge_id:
+                  type: string
+                code:
+                  type: string
+      responses:
+        '200':
+          description: Informe de auditoría si el pago fue exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  audit_report:
+                    type: object
+                  status:
+                    type: string
+        '402':
+          description: Pago no completado
+

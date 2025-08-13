@@ -1,6 +1,9 @@
 require("dotenv").config();
 require("@nomicfoundation/hardhat-toolbox");
 
+// 🔐 Plugin de auditoría personalizado
+require("./hardhat-contractauditorx/index.cjs");
+
 const { auditBeforeDeploy } = require("./auditBeforeDeploy");
 
 (async () => {
@@ -8,7 +11,7 @@ const { auditBeforeDeploy } = require("./auditBeforeDeploy");
     await auditBeforeDeploy();
     console.log("✅ Auditoría completada. Continuando con el deploy...");
   } catch (err) {
-    console.error(err.message);
+    console.error("❌ Error en la auditoría:", err.message || err);
     process.exit(1);
   }
 })();
