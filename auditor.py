@@ -119,6 +119,11 @@ async def verify_payment(request: Request):
             content={"error": f"Error interno: {str(e)}"}
         )
 
+# ✅ Endpoint para Health Check
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
+
 
 
 
