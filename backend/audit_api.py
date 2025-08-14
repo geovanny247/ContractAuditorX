@@ -1,32 +1,41 @@
-from fastapi import FastAPI, Request, HTTPException
-from webhook import pagos_confirmados
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import uuid
 
 app = FastAPI()
 
+# Modelo de entrada
+class AuditRequest(BaseModel):
+    audit_id: str
+    code: str
+
+# Simulación de base de datos de pagos
+pagos = {}
+
 @app.post("/audit")
-async def audit(request: Request):
+def audit_contract(data: AuditRequest):
     try:
-        data = await request.json()
-        audit_id = data.get("audit_id")
-
-        if not audit_id:
-            raise HTTPException(status_code=400, detail="Falta el campo 'audit_id'")
-
-        if audit_id not in pagos_confirmados:
+        # Simulación: si no se ha pagado, generar checkout
+        if data.audit_id not in pagos:
+            checkout_id = str(uuid.uuid4())
+            pagos[data.audit_id] = {
+                "status": "bloqueado",
+                "checkout_id": checkout_id
+            }
             return {
                 "status": "bloqueado",
                 "mensaje": "🔒 Auditoría bloqueada. Realiza el pago para desbloquear.",
-                "pago": f"https://commerce.coinbase.com/checkout/tu-checkout-id?audit_id={audit_id}"
+                "pago": f"https://commerce.coinbase.com/checkout/{checkout_id}?audit_id={data.audit_id}"
             }
 
-        # Simulación de auditoría real
+        # Si ya se pagó
         return {
-            "status": "completado",
-            "audit_id": audit_id,
-            "issues_found": ["No hay validaciones explícitas en el contrato"],
-            "total_issues": 1
+            "status": "desbloqueado",
+            "mensaje": "✅ Auditoría desbloqueada.",
+            "resultado": "El contrato es seguro (simulado)"
         }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error interno: {str(e)}")
+
 
